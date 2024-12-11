@@ -1,11 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
-
-# PCA part 1
 
 # Load data
 file_path = r'C:\Users\spac-23\Documents\w10\vgsales.csv'
@@ -19,14 +15,15 @@ X = data[numerical_cols].dropna()  # Drop rows with missing values
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Perform PCA
-pca = PCA()
-pca.fit(X_scaled)
+# Perform SVD
+U, S, Vt = np.linalg.svd(X_scaled, full_matrices=False)
+explained_variance = (S**2) / (X_scaled.shape[0] - 1)
+explained_variance_ratio = explained_variance / explained_variance.sum()
 
-# Get the loadings (contributions of features to PCs)
-loadings = pca.components_.T
+# PCA Loadings
+loadings = Vt.T  # Rows correspond to features, columns to PCs
 
-# Plot a correlation circle
+# Correlation Circle (PC1 vs PC2)
 plt.figure(figsize=(8, 8))
 plt.axhline(0, color='gray', linestyle='--', linewidth=0.7)
 plt.axvline(0, color='gray', linestyle='--', linewidth=0.7)
@@ -45,17 +42,10 @@ plt.grid()
 plt.gca().set_aspect('equal', adjustable='box')
 plt.show()
 
-
-# PCA part 2
-
-
-# Use raw loadings for plotting
-raw_loadings = pd.DataFrame(pca.components_,
-                            columns=numerical_cols,
-                            index=[f"PC{i+1}" for i in range(pca.n_components_)])
-
-# Transpose for plotting
-raw_loadings = raw_loadings.T
+# Raw Loadings (Feature Contributions)
+raw_loadings = pd.DataFrame(loadings,
+                            columns=[f"PC{i+1}" for i in range(Vt.shape[0])],
+                            index=numerical_cols)
 
 # Plot grouped bar chart for raw loadings
 plt.figure(figsize=(12, 8))
@@ -77,4 +67,24 @@ plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.show()
 
+# Explained Variance and Cumulative Variance
+cumulative_variance_ratio = np.cumsum(explained_variance_ratio)
+
+plt.figure(figsize=(10, 6))
+plt.bar(range(1, len(explained_variance_ratio) + 1), explained_variance_ratio, alpha=0.7, label='Explained Variance')
+plt.plot(range(1, len(cumulative_variance_ratio) + 1), cumulative_variance_ratio, marker='o', color='red', label='Cumulative Variance')
+plt.title('Explained Variance and Cumulative Variance (SVD)')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Variance Explained')
+plt.legend(loc='best')
+plt.grid()
+plt.show()
+
+# Summary statistics
+summary_stats = X.describe().T  # Transpose for better readability
+summary_stats['median'] = X.median()  # Add median column
+
+# Print summary statistics
+print("Summary Statistics:")
+print(summary_stats)
 
