@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 
 # Load data
@@ -80,6 +81,11 @@ plt.legend(loc='best')
 plt.grid()
 plt.show()
 
+# Pairwise scatterplot matrix
+sns.pairplot(X)  # Generates pairwise scatterplots for all numeric columns
+plt.suptitle('Pairwise Scatterplot Matrix of Attributes', y=1.02)  # Title above the plot
+plt.show()
+
 # Summary statistics
 summary_stats = X.describe().T  # Transpose for better readability
 summary_stats['median'] = X.median()  # Add median column
@@ -87,4 +93,3 @@ summary_stats['median'] = X.median()  # Add median column
 # Print summary statistics
 print("Summary Statistics:")
 print(summary_stats)
-
