@@ -90,3 +90,89 @@ plot_sales_by_release_year(data)  # Sales by release year across regions
 plot_sales_by_publisher(data, top_n=10)  # Top 10 publishers
 plot_sales_by_genre(data)  # Sales by genre
 plot_sales_by_platform(data, top_n=10)  # Top 10 platforms
+
+
+
+def plot_sales_vs_platforms_boxplot(data):
+    # Group by title and aggregate
+    title_sales = (
+        data.groupby('Name')
+        .agg({'Platform': 'nunique', 'Global_Sales': 'sum'})
+        .reset_index()
+        .rename(columns={'Platform': 'Num_Platforms', 'Global_Sales': 'Total_Sales'})
+    )
+
+    # Boxplot of Total Sales vs. Number of Platforms
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=title_sales, x='Num_Platforms', y='Total_Sales')
+    plt.title('Distribution of Total Sales by Number of Platforms')
+    plt.xlabel('Number of Platforms')
+    plt.ylabel('Total Sales (in Millions)')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.show()
+
+# Call the function
+plot_sales_vs_platforms_boxplot(data)
+
+
+def calculate_platform_sales_correlation(data):
+    # Group by title and aggregate
+    title_sales = (
+        data.groupby('Name')
+        .agg({'Platform': 'nunique', 'Global_Sales': 'sum'})
+        .reset_index()
+        .rename(columns={'Platform': 'Num_Platforms', 'Global_Sales': 'Total_Sales'})
+    )
+
+    # Compute correlation
+    correlation = title_sales['Num_Platforms'].corr(title_sales['Total_Sales'])
+    print(f"Correlation between Number of Platforms and Total Sales: {correlation:.4f}")
+
+    return correlation
+
+# Call the function
+correlation = calculate_platform_sales_correlation(data)
+
+
+def plot_sales_by_platforms_and_region(data, region):
+    """
+    Plots sales by number of platforms for a specific region.
+    """
+    # Group by game title and calculate the number of platforms and total sales for the region
+    title_sales_region = (
+        data.groupby('Name')
+        .agg({'Platform': 'nunique', region: 'sum'})
+        .reset_index()
+        .rename(columns={'Platform': 'Num_Platforms', region: 'Region_Sales'})
+    )
+
+    # Remove games with no sales in the region
+    title_sales_region = title_sales_region[title_sales_region['Region_Sales'] > 0]
+
+    # Plot a boxplot for the region
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=title_sales_region, x='Num_Platforms', y='Region_Sales', palette='viridis')
+    plt.title(f'Sales by Number of Platforms for {region}', fontsize=16)
+    plt.xlabel('Number of Platforms', fontsize=14)
+    plt.ylabel(f'{region} Sales (in Millions)', fontsize=14)
+    plt.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+
+    # Calculate and print correlation
+    correlation = title_sales_region['Num_Platforms'].corr(title_sales_region['Region_Sales'])
+    print(f"Correlation between Number of Platforms and {region} Sales: {correlation:.4f}")
+
+# Example: Plot for North America
+plot_sales_by_platforms_and_region(data, 'NA_Sales')
+
+# Example: Plot for Europe
+plot_sales_by_platforms_and_region(data, 'EU_Sales')
+
+# Example: Plot for Japan
+plot_sales_by_platforms_and_region(data, 'JP_Sales')
+
+# Example: Plot for Other regions
+plot_sales_by_platforms_and_region(data, 'Other_Sales')
+
+
